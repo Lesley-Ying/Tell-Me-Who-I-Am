@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Endless Fight</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.6.0/p5.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.6.0/addons/p5.sound.min.js"></script>
+  <style>
+    body {
+  margin: 0;
+  background: #dce3e2;
+
+  display: flex;
+  justify-content: center;
+  align-items: center;
+
+  height: 100vh;
+}
+
+#p5-canvas-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+  </style>
+</head>
+<body>
+  <div id="p5-canvas-container"></div>
+  
+  <script>
+
+let pages = [];
+let currentPage = 0;
+let totalPages = 20;
+let pagesWithFlashlight = [0,6,8,10,12,13]; 
+let overlay;
+let pagesWithoutElevator = [1,2,4,6,8,10,12,13,16,17,18];
+
+// 电梯动画参数
+let animating = false;
+let rectX1, rectX2;
+let rectSpeed = 4; // 调慢速度
+let phase = "closing";
+
+// 音效
+let elevatorSound;
+
+function preload() {
+  console.log("preload start");
+  pages.push(loadImage("assets/1.png", () => console.log("1 loaded")));
+  pages.push(loadImage("assets/2.png", () => console.log("2 loaded")));
+  pages.push(loadImage("assets/3.png", () => console.log("3 loaded")));
+  pages.push(loadImage("assets/4.png", () => console.log("4 loaded")));
+  pages.push(loadImage("assets/5.png", () => console.log("5 loaded")));
+  pages.push(loadImage("assets/6.png", () => console.log("6 loaded")));
+  pages.push(loadImage("assets/7.png", () => console.log("7 loaded")));
+   pages.push(loadImage("assets/8.png", () => console.log("8 loaded")));
+   pages.push(loadImage("assets/9.png", () => console.log("9 loaded")));
+   pages.push(loadImage("assets/10.png", () => console.log("10 loaded")));
+   pages.push(loadImage("assets/11.png", () => console.log("11 loaded")));
+   pages.push(loadImage("assets/12.png", () => console.log("12 loaded")));
+   pages.push(loadImage("assets/13.png", () => console.log("13 loaded")));
+   pages.push(loadImage("assets/14.png", () => console.log("14 loaded")));
+   pages.push(loadImage("assets/15.png", () => console.log("15 loaded")));
+   pages.push(loadImage("assets/16.png", () => console.log("16 loaded")));
+   pages.push(loadImage("assets/17.png", () => console.log("17 loaded")));
+   pages.push(loadImage("assets/18.png", () => console.log("18 loaded")));
+   pages.push(loadImage("assets/19.png", () => console.log("19 loaded")));
+   pages.push(loadImage("assets/20.png", () => console.log("20 loaded")));
+  
+
+  // 加载音效
+  elevatorSound = loadSound('assets/elevator.wav'); // 替换成你的音频路径
+}
+
+function setup() {
+  let canvas = createCanvas(600, 800);
+  canvas.parent('p5-canvas-container');
+  overlay = createGraphics(width, height);
+  overlay.pixelDensity(1);
+
+  rectX1 = -width/2;
+  rectX2 = width;
+}
+
+function draw() {
+  image(pages[currentPage], 0, 0, width, height);
+
+  if (pagesWithFlashlight.includes(currentPage)) {
+    drawFlashlight();
+  }
+
+  drawButton();
+
+  if (animating) {
+    drawElevator();
+  }
+}
+
+// 手电筒逻辑保持不变
+function drawFlashlight() {
+  overlay.clear();
+  overlay.push();
+  overlay.noStroke();
+  overlay.fill(0, 220);
+  overlay.rect(0, 0, overlay.width, overlay.height);
+
+  let px = touches.length > 0 ? touches[0].x : mouseX;
+  let py = touches.length > 0 ? touches[0].y : mouseY;
+
+  let baseR = 160;
+  let speed = dist(px, py, pmouseX, pmouseY);
+  let rOuter = baseR + speed * 2;
+  let rInner = rOuter * 0.2;
+
+  let ctx = overlay.drawingContext;
+  ctx.save();
+  ctx.globalCompositeOperation = 'destination-out';
+
+  let grad = ctx.createRadialGradient(px, py, rInner, px, py, rOuter);
+  grad.addColorStop(0, 'rgba(0,0,0,1)');
+  grad.addColorStop(0.7, 'rgba(0,0,0,0.2)');
+  grad.addColorStop(1, 'rgba(0,0,0,0)');
+
+  ctx.beginPath();
+  ctx.fillStyle = grad;
+  ctx.arc(px, py, rOuter, 0, TWO_PI);
+  ctx.fill();
+  ctx.restore();
+  overlay.pop();
+
+  image(overlay, 0, 0);
+
+  noStroke();
+  fill(255, 200);
+  circle(px, py, 8);
+}
+
+// 右下角按钮
+function drawButton() {
+  let w = 120, h = 50;
+  let x = width - w - 20;
+  let y = height - h - 20;
+
+  fill(255, 100);
+  rect(x, y, w, h, 10);
+  fill(0);
+  textAlign(CENTER, CENTER);
+  textSize(18);
+  text("Next Page", x + w/2, y + h/2);
+}
+
+// 点击按钮触发动画
+function mousePressed() {
+  let w = 120, h = 50;
+  let x = width - w - 20;
+  let y = height - h - 20;
+
+  if (mouseX > x && mouseX < x + w && mouseY > y && mouseY < y + h) {
+let nextPageIndex = (currentPage + 1) % totalPages;
+    // 如果当前是第二页（index=1）翻到第三页（index=2），直接翻页，不动画
+    // 如果下一页在不需要动画的列表中，直接翻页
+    if (pagesWithoutElevator.includes(currentPage)) {
+      currentPage = nextPageIndex;
+      return;
+    }
+
+    // 否则触发电梯动画 + 播放音效
+    if (!animating) {
+      animating = true;
+      phase = "closing";
+      rectX1 = -width/2;
+      rectX2 = width;
+
+      if (elevatorSound.isLoaded()) {
+        elevatorSound.play();
+      }
+    }
+  }
+}
+
+// 电梯开合动画
+function drawElevator() {
+  fill(0);
+  noStroke();
+
+  if (phase === "closing") {
+    rectX1 += rectSpeed;
+    rectX2 -= rectSpeed;
+
+    rect(rectX1, 0, width/2, height);
+    rect(rectX2, 0, width/2, height);
+
+    if (rectX1 >= 0) {
+      currentPage = (currentPage + 1) % totalPages;
+      phase = "opening";
+    }
+  } else if (phase === "opening") {
+    rectX1 -= rectSpeed;
+    rectX2 += rectSpeed;
+
+    rect(rectX1, 0, width/2, height);
+    rect(rectX2, 0, width/2, height);
+
+    if (rectX1 <= -width/2) {
+      animating = false;
+    }
+  }
+}
+
+
+function windowResized() {
+  resizeCanvas(windowWidth, windowHeight);
+  overlay = createGraphics(width, height);
+}
+
+
+  </script>
+</body>
+</html>
