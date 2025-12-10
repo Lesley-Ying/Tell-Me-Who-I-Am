@@ -138,9 +138,8 @@ function drawFlashlight() {
   circle(px, py, 8);
 }
 
-// 右下角按钮
 function drawButton() {
-  let w = 120, h = 50;
+  let w = 60, h = 25;
   let x = width - w - 20;
   let y = height - h - 20;
 
@@ -149,12 +148,12 @@ function drawButton() {
   fill(0);
   textAlign(CENTER, CENTER);
   textSize(18);
-  text("Next Page", x + w/2, y + h/2);
+  text("☠️", x + w/2, y + h/2);
 }
 
-// 点击按钮触发动画
+
 function mousePressed() {
-  let w = 120, h = 50;
+  let w = 60, h = 25;
   let x = width - w - 20;
   let y = height - h - 20;
 
