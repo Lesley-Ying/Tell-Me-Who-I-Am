@@ -71,10 +71,7 @@ function preload() {
    pages.push(loadImage("assets/19.png", () => console.log("19 loaded")));
    pages.push(loadImage("assets/20.png", () => console.log("20 loaded")));
    tool=loadImage("assets/flashlight2.PNG")
-  
-
-  // 加载音效
-  elevatorSound = loadSound('assets/elevator.wav'); // 替换成你的音频路径
+  elevatorSound = loadSound('assets/elevator.wav'); 
 }
 
 function setup() {
@@ -88,11 +85,10 @@ function setup() {
 }
 
 function draw() {
-  // ⭐ 根据 currentPage 决定是否显示系统鼠标
   if (pagesWithCustomCursor.includes(currentPage)) {
-    noCursor();  // 隐藏系统鼠标
+    noCursor();  
   } else {
-    cursor();    // 保留系统鼠标
+    cursor();    
   }
   image(pages[currentPage], 0, 0, width, height);
   if (pagesWithCustomCursor.includes(currentPage)) {
