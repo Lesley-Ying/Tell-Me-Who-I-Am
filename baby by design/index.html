@@ -82,7 +82,7 @@ function setup() {
   canvas.parent('p5-canvas-container');
   overlay = createGraphics(width, height);
   overlay.pixelDensity(1);
-
+  
   rectX1 = -width/2;
   rectX2 = width;
 }
@@ -194,6 +194,7 @@ let nextPageIndex = (currentPage + 1) % totalPages;
 
       if (elevatorSound.isLoaded()) {
         elevatorSound.play();
+        sound.setVolume(0.5);
       }
     }
   }
