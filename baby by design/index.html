@@ -34,19 +34,20 @@
 let pages = [];
 let currentPage = 0;
 let totalPages = 20;
-let pagesWithFlashlight = [0,6,8,10,12,13]; 
+let pagesWithFlashlight = [6,8,10,12,13]; 
 let overlay;
 let pagesWithoutElevator = [1,2,4,6,8,10,12,13,16,17,18];
 
-// 电梯动画参数
+
 let animating = false;
 let rectX1, rectX2;
-let rectSpeed = 4; // 调慢速度
+let rectSpeed = 4; 
 let phase = "closing";
 
-// 音效
-let elevatorSound;
 
+let elevatorSound;
+let tool;
+let pagesWithCustomCursor = [6,8,10,12,13];
 function preload() {
   console.log("preload start");
   pages.push(loadImage("assets/1.png", () => console.log("1 loaded")));
@@ -69,6 +70,7 @@ function preload() {
    pages.push(loadImage("assets/18.png", () => console.log("18 loaded")));
    pages.push(loadImage("assets/19.png", () => console.log("19 loaded")));
    pages.push(loadImage("assets/20.png", () => console.log("20 loaded")));
+   tool=loadImage("assets/flashlight2.PNG")
   
 
   // 加载音效
@@ -76,7 +78,7 @@ function preload() {
 }
 
 function setup() {
-  let canvas = createCanvas(600, 800);
+  let canvas = createCanvas(571, 800);
   canvas.parent('p5-canvas-container');
   overlay = createGraphics(width, height);
   overlay.pixelDensity(1);
@@ -86,7 +88,25 @@ function setup() {
 }
 
 function draw() {
+  // ⭐ 根据 currentPage 决定是否显示系统鼠标
+  if (pagesWithCustomCursor.includes(currentPage)) {
+    noCursor();  // 隐藏系统鼠标
+  } else {
+    cursor();    // 保留系统鼠标
+  }
   image(pages[currentPage], 0, 0, width, height);
+  if (pagesWithCustomCursor.includes(currentPage)) {
+    let px = mouseX;
+    let py = mouseY;
+
+    if (touches.length > 0) {
+      px = touches[0].x;
+      py = touches[0].y;
+    }
+
+    image(tool, px-25, py-17.5, 50, 35);
+  }
+
 
   if (pagesWithFlashlight.includes(currentPage)) {
     drawFlashlight();
@@ -99,7 +119,7 @@ function draw() {
   }
 }
 
-// 手电筒逻辑保持不变
+
 function drawFlashlight() {
   overlay.clear();
   overlay.push();
@@ -110,7 +130,7 @@ function drawFlashlight() {
   let px = touches.length > 0 ? touches[0].x : mouseX;
   let py = touches.length > 0 ? touches[0].y : mouseY;
 
-  let baseR = 160;
+  let baseR = 200;
   let speed = dist(px, py, pmouseX, pmouseY);
   let rOuter = baseR + speed * 2;
   let rInner = rOuter * 0.2;
@@ -135,7 +155,7 @@ function drawFlashlight() {
 
   noStroke();
   fill(255, 200);
-  circle(px, py, 8);
+  //circle(px, py, 8);
 }
 
 function drawButton() {
@@ -148,7 +168,7 @@ function drawButton() {
   fill(0);
   textAlign(CENTER, CENTER);
   textSize(18);
-  text("☠️", x + w/2, y + h/2);
+  text("➠", x + w/2, y + h/2);
 }
 
 
@@ -159,14 +179,13 @@ function mousePressed() {
 
   if (mouseX > x && mouseX < x + w && mouseY > y && mouseY < y + h) {
 let nextPageIndex = (currentPage + 1) % totalPages;
-    // 如果当前是第二页（index=1）翻到第三页（index=2），直接翻页，不动画
-    // 如果下一页在不需要动画的列表中，直接翻页
+    
     if (pagesWithoutElevator.includes(currentPage)) {
       currentPage = nextPageIndex;
       return;
     }
 
-    // 否则触发电梯动画 + 播放音效
+
     if (!animating) {
       animating = true;
       phase = "closing";
@@ -180,7 +199,7 @@ let nextPageIndex = (currentPage + 1) % totalPages;
   }
 }
 
-// 电梯开合动画
+
 function drawElevator() {
   fill(0);
   noStroke();
